@@ -1,0 +1,111 @@
+#include<SFML/Graphics.hpp>
+//Do box collision
+
+#include<iostream>
+#include<math.h>
+#include "imgui.h"
+#include "imgui-SFML.h"
+
+int main(int argc, char** argv[]) {
+	sf::RenderWindow window(sf::VideoMode(800, 800), "Ciruit");
+	ImGui::SFML::Init(window);
+
+	bool gravity = false;
+	bool forcegravity = true;
+	float pressure = 0;
+	sf::Clock travelClock;
+	sf::Time subTime;
+	
+	sf::VertexArray path(sf::LinesStrip, 5);
+
+	sf::Color c = sf::Color::Black;
+	path[0].color = c;
+	path[1].color = c;
+	path[2].color = c;
+	path[3].color = c;
+	path[4].color = c;
+
+	float centerX = 400, centerY = 400;
+	int Diagonal = 100;
+	int rotate = 0;
+
+	//initial positioning
+	for (int i = 0; i < 5; i++) {
+		path[0].position = sf::Vector2f(centerX, centerY-Diagonal);
+		path[1].position = sf::Vector2f(centerX+Diagonal, centerY);
+		path[2].position = sf::Vector2f(centerX, centerY+Diagonal);
+		path[3].position = sf::Vector2f(centerX-Diagonal, centerY);
+		path[4].position = sf::Vector2f(centerX, centerY - Diagonal);
+	}
+
+
+	sf::Clock deltaClock;
+	while (window.isOpen()) {
+		sf::Event e;
+		while (window.pollEvent(e)) {
+			ImGui::SFML::ProcessEvent(e);
+			if (e.type == sf::Event::Closed) {
+				window.close();
+			}
+
+			//gravity
+			if (gravity == true) {
+				sf::Clock travelClock;
+				subTime = travelClock.getElapsedTime();
+				std::cout << "SubTime is " << subTime.asSeconds() << std::endl;
+			}
+
+			//ground collision
+			if (path[2].position.y >= 560){
+				sf::Time travelTime = travelClock.getElapsedTime();
+				std::cout << "Travel time is " << travelTime.asSeconds();
+				std::cout << travelTime.asSeconds() - subTime.asSeconds() << std::endl;
+				gravity = false;
+				forcegravity = false;
+			}
+
+
+		}//pollevent 
+
+		ImGui::SFML::Update(window, deltaClock.restart());
+
+		//positioning of the vertex
+		path[0].position = sf::Vector2f(centerX, centerY - Diagonal);
+		path[1].position = sf::Vector2f(centerX + Diagonal, centerY);
+		path[2].position = sf::Vector2f(centerX, centerY + Diagonal);
+		path[3].position = sf::Vector2f(centerX - Diagonal, centerY);
+		path[4].position = sf::Vector2f(centerX, centerY - Diagonal);
+
+		//gravity
+		if (gravity == true && forcegravity == true) {
+			centerY = centerY + 2.0f;
+			centerX = centerX;
+		}
+
+		
+
+
+
+
+
+		ImGui::Begin("AirPressure");
+		ImGui::Text("AirPressure");
+
+		ImGui::Checkbox("Gravity", &gravity);
+		ImGui::SliderFloat("Move", &centerY, 200, 500);
+
+		ImGui::End();
+
+
+
+		window.clear(sf::Color::White);
+
+		window.draw(path);
+
+		ImGui::SFML::Render(window);
+		window.display();
+	}
+
+	ImGui::SFML::Shutdown();
+	return 0;
+}
